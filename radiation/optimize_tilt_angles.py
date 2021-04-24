@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 latitudes = np.arange(0, 61, 1) * ureg.deg
 gammas = 0 * ureg.degree
 
-n_times_move = 3
+n_times_move = 1
 
 days_in_year = 365
 spring_equinox = 81

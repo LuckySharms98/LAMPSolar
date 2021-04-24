@@ -33,12 +33,11 @@ class Radiation:
         deltas = Radiation.calculate_delta(self.days)
         # breakpoint()
         # set_trace()
-        if self.module_type.lower() in 'fixed':
+        if self.module_type in 'fixed':
             [omega_v, latitude_v, delta_v, beta_v, gamma_v] = np.meshgrid(self._omegas, self.latitudes, deltas,
                                                                           self.betas, self.gammas)
-        elif self.module_type.lower().str.match(pat = '(1daxisNS)|(1daxisEW)|(2d)'):
+        elif self.module_type in ['1daxisNS', '1daxisEW', '2d']:
             [omega_v, latitude_v, delta_v] = np.meshgrid(self._omegas, self.latitudes, deltas)
-
 
 
 
@@ -58,23 +57,26 @@ class Radiation:
         gamma_s_v[np.isnan(gamma_s_v)] = 0
         gamma_s_v[alpha_s_v <= 0] = 0
 
-        if self.module_type.lower().str.match(pat='(fixed)'):
+        if self.module_type in 'fixed':
             if self.beta_fraction_flag:
                 cos_theta_tilt_v = cos_theta_z_v * np.cos(beta_v * latitude_v) + np.sin(theta_z_v) * np.sin(
                     beta_v * latitude_v) * np.cos(gamma_s_v - gamma_v)
             else:
                 cos_theta_tilt_v = cos_theta_z_v * np.cos(beta_v) + np.sin(theta_z_v) * np.sin(beta_v) * np.cos(
                     gamma_s_v - gamma_v)
-        elif self.module_type.lower().str.match(pat='(1daxisNS)'):
-            cos_theta_tilt_v = math.sqrt(1 - np.cos(delta_v)**2*np.sin(omega_v)**2)
+        elif self.module_type in '1daxisNS':
+            cos_theta_tilt_v = np.sqrt(1 - np.cos(delta_v)**2*np.sin(omega_v)**2)
             beta_v = np.arctan(np.tan(theta_z_v)*abs(np.cos(gamma_s_v)))
-        elif self.module_type.lower().str.match(pat='(1daxisEW)'):
-            cos_theta_tilt_v = math.sqrt(np.cos(theta_z_v)^2+ np.cos(delta_v) ** 2 * np.sin(omega_v) ** 2)
-            gamma_v = np.zeros(gamma_s_v.shape )
-            beta_v = np.arctan(tan(thetaz_v) * abs(cos(gamma_s_v)))
-        elif self.module_type.lower().str.match(pat='(2d)'):
+        elif self.module_type in '1daxisEW':
+            cos_theta_tilt_v = np.sqrt(cos_theta_z_v**2+ np.cos(delta_v) ** 2 * np.sin(omega_v) ** 2)
+            gamma_v = np.zeros(gamma_s_v.shape)
+            gamma_v[gamma_s_v > math.pi/2] = math.pi/2
+            gamma_v[gamma_s_v <= math.pi / 2] = math.pi / 2
+            beta_v = np.arctan(np.tan(theta_z_v) * abs(np.cos(gamma_v - gamma_s_v)))
+        elif self.module_type in '2d':
             cos_theta_tilt_v = 1
-
+            #gamma_v = gamma_s_v
+            beta_v = theta_z_v
 
         i_b_tilt_v = i_b_v * cos_theta_tilt_v
         i_b_tilt_v[i_b_tilt_v < 0] = 0
@@ -96,7 +98,7 @@ class Radiation:
         self.I_tD = self.I_dD + self.I_bD
         self.I_tmD = self.I_dmD + self.I_bmD
 
-        day_index = 3
+        day_index = 1
 
         self.I_bA = np.trapz(self.I_bD, self.days, axis=day_index)/ureg.day
         self.I_dA = np.trapz(self.I_dD, self.days, axis=day_index)/ureg.day
@@ -202,9 +204,12 @@ class Radiation:
     def set_module_type(self, value):
         # if not(value.check('dimensionless')):
         #    raise ValueError("Latitude should be dimensionless")
-        if not value.str.match(pat = '(fixed)|(1daxisNS)|(1daxisEW)|(2d)')
-            raise ValueError('module type needs to be fixed, 1daxisNW, 1daxisEW, or 2d')
 
+        #if not value.match(pat = '(fixed)|(1daxisNS)|(1daxisEW)|(2d)'):
+        if value not in ['fixed', '1daxisNS', '1daxisEW', '2d']:
+            raise ValueError('module type needs to be fixed, 1daxisNS, 1daxisEW, or 2d')
+        else:
+            self.module_type = value
 
 
 
@@ -302,11 +307,14 @@ class Radiation:
 
 
 
-    def contour_irradiance(self, x_variable, y_variable, z_variable, lines, type_plot='Cartesian'):
+    def contour_irradiance(self, x_variable, y_variable, z_variable, lines, type_plot='Cartesian', normalize = 0):
         [var_x_index, var_x, x_axis_label, var_x_units] = self.get_variable(x_variable)
         [var_y_index, var_y, y_axis_label, var_y_units] = self.get_variable(y_variable)
 
         [z, z_m, z_axis_label] = self.get_irradiance_variable(z_variable)
+        if 'Annual' in z_variable:
+            var_x_index = var_x_index - 1
+            var_y_index = var_y_index - 1
 
         self._check_vars_plot(z, var_x_index, var_y_index)
         #plt.interactive(True)
@@ -331,11 +339,19 @@ class Radiation:
             plt.ylabel(y_axis_label)
             ax.tick_params(top=True, right=True, direction='in')
         else:
+            if normalize:
+                z_value = np.squeeze(np.transpose(z_m.magnitude)/np.max(z_m.magnitude))
+            else:
+                z_value = np.squeeze(np.transpose(z_m.magnitude))
             fig, ax = plt.subplots(subplot_kw=dict(projection='polar'))
             #fig, ax = plt.subplots()
             ax.set_theta_zero_location("S")
             #cs = ax.contourf(y_v.to('rad').magnitude, x_v.magnitude, np.squeeze(np.transpose(z_m.magnitude)), linestyles='none', cmap=plt.cm.jet)
-            cs = ax.contourf(y_v.to('rad').magnitude, x_v.magnitude, np.squeeze(np.transpose(z_m.magnitude)), 200, vmin = min(lines), vmax = max(lines), linestyles='none', cmap = plt.cm.jet)
+            cs = ax.contourf(y_v.to('rad').magnitude, x_v.magnitude, z_value, 200, vmin = min(lines), vmax = max(lines), linestyles='none', cmap = plt.cm.jet)
+            if normalize:
+                cs2 = plt.contour(y_v.to('rad').magnitude, x_v.magnitude, z_value, lines, vmin=min(lines),
+                    vmax=max(lines), colors='k', linewidths=1, linestyles='solid')
+
             #cs2 = plt.contour(x_v, y_v, np.squeeze(z_m.magnitude), lines, colors='k', linewidths=1, linestyles='solid')
             #ax.clabel(cs2, lines, inline = 1, fontsize = 14, inline_spacing = 5)
             cbaxes = fig.add_axes([0.86, 0.1, 0.03, 0.8])

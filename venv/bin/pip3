@@ -1,4 +1,4 @@
-#!/Users/pleu/Documents/Code/LAMPsolar/venv/bin/python
+#!/Users/pleu/Documents/LAMPsolar/venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys

@@ -5,7 +5,7 @@ from scipy import interpolate
 from radiation import plt
 from display_months import display_months
 
-latitudes = [60] * ureg.degree
+latitudes = [40] * ureg.degree
 days = np.linspace(0, 365, 30)  * ureg.day
 
 betas = np.linspace(0, 90, 20) * ureg.degree
@@ -22,7 +22,14 @@ plt.title('')
 #plt.clim(cs, 0, 10)
 #plt.colorbar(cs)
 
-plt.figure(2)
+normalized = 1
+cs = rb.contour_irradiance('Beta','Gamma','TotalAnnualPerDay', np.arange(0, 1.05, 0.05), 'polar', normalized)
+plt.title('')
+
+
+
+
+plt.figure(3)
 
 
 gammas = np.arange(0, 91, 30) * ureg.degree
