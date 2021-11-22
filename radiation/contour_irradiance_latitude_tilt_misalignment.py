@@ -4,11 +4,14 @@ import numpy as np
 
 from radiation import plt
 #latitudes = np.concatenate([[0, 1], np.arange(2, 61, 2)]) * ureg.deg
-latitudes = np.arange(0, 61, 2) * ureg.deg
+#latitudes = np.arange(0, 61, 2) * ureg.deg
+latitudes = np.concatenate([[0, 1], np.arange(2, 61, 2)]) * ureg.deg
+#latitudes = np.arange(0, 61, 1) * ureg.deg
 days = np.linspace(0, 365) * ureg.day
+#days = np.linspace(0, 365, 10) * ureg.day
 
-#betas = np.linspace(-35, 70, 201)*ureg.deg
-betas = np.linspace(-35, 70, 301)*ureg.deg
+betas = np.linspace(-35, 70, 101)*ureg.deg
+#betas = np.linspace(-35, 70, 301)*ureg.deg
 #betaFraction = np.linspace(0, 1.8, 21)
 gammas = 0 * ureg.deg
 
@@ -27,6 +30,9 @@ plt.ylim([.88, 1])
 #plt.ylim([.94, 1])
 plt.xlim([-30, 30])
 plt.show(block=True)
+
+#np.polyfit()
+#slopes[i, intercepts[ind], r_values[ind], p_value, std_err = stats.linregress(latitudesFit, beta_optimum[latitudes <= latitudes_fit_cutoff, ind])
 
 
 

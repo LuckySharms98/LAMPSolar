@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 #matplotlib.use('macosx')
 import matplotlib as matplotlib
 from matplotlib.cm import ScalarMappable
+from scipy.optimize import curve_fit
+
 
 font = {'size'   : 14}
 matplotlib.rc('font', **font)
@@ -273,7 +275,7 @@ class Radiation:
         tilt_misalignment_relative = np.linspace(-misalignment, misalignment, num_misalignment_tilts)
 
         if normalize_file:
-            data = np.loadtxt('Optimize1', delimiter=',')
+            data = np.loadtxt('Optimize1normalize', delimiter=',')
             opt_beta = data[:, 1]*ureg.degree
             max_I_tmA_day_average = data[:, 3]
             if len(max_I_tmA_day_average) != len(self.latitudes):
@@ -296,7 +298,27 @@ class Radiation:
         fig, ax = plt.subplots()
         avg_over_all_latitudes = np.mean(I_tmA_interp, 1)
 
-        plt.plot(tilt_misalignment_relative.magnitude, avg_over_all_latitudes)
+        pFit = np.polyfit(tilt_misalignment_relative.magnitude, avg_over_all_latitudes, 2)
+        p = np.poly1d(pFit)
+
+        def func(x, p1, p2):
+            return 1 + p1*x + p2*x**2
+        xdata = tilt_misalignment_relative.magnitude
+        ydata = avg_over_all_latitudes
+        popt, pcov = curve_fit(func, xdata, ydata)
+        residuals = ydata- func(xdata, *popt)
+        ss_res = np.sum(residuals**2)
+        ss_tot = np.sum((ydata-np.mean(ydata))**2)
+        r_squared = 1 - (ss_res/ss_tot)
+
+
+
+
+        plt.plot(tilt_misalignment_relative.magnitude, avg_over_all_latitudes, tilt_misalignment_relative.magnitude, p(tilt_misalignment_relative.magnitude), ':', color = '#1f77b4')
+
+
+
+
         plt.xlabel('Tilt Misalignment (' + u'\N{DEGREE SIGN}' + ')')
         plt.ylabel('Normalized Insolation')
 
@@ -315,6 +337,8 @@ class Radiation:
         if 'Annual' in z_variable:
             var_x_index = var_x_index - 1
             var_y_index = var_y_index - 1
+            if var_x_index < 0:
+                var_x_index = 0
 
         self._check_vars_plot(z, var_x_index, var_y_index)
         #plt.interactive(True)

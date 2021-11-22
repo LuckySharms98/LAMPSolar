@@ -27,14 +27,19 @@ for ind in range(len(files)):
 
 labels += labelsTracking
 
-plt.legend(labels,frameon=False)
+plt.legend(labels,frameon=False,loc='lower left')
 
 
 plt.xlim(0, 60)
-
+plt.ylim(4, 10)
+#
 plt.xlabel('Latitude (' + u'\N{DEGREE SIGN}' + ')')
 plt.ylabel('Annual Average Total Insolation \n(kW-h/m$^2$/day)')
 
+plt.savefig("optimized_insolation.png",bbox_inches='tight')
+
+
+#plt.ylim(4, 12)
 #labels = []
 plt.figure(2)
 colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
@@ -42,11 +47,15 @@ for ind in np.arange(1,max_n_times_move+len(files)):
     plt.plot(data[ind][:, 0], 100*(data[ind][:, -1]/data[0][:, -1]-1), color=colors[ind])
     #labels += [str(ind + 1) + ' Tilts per Year']
 
-plt.legend(labels[1:],frameon=False)
+plt.legend(labels[1:],frameon=False,loc='upper left')
 
 
 plt.xlabel('Latitude (' + u'\N{DEGREE SIGN}' + ')')
-plt.ylabel('Increase in Total Insolation (%)')
+plt.ylabel('Increase in Total Insolation (Percentage)')
 plt.xlim(0, 60)
+plt.ylim(0, 65)
+
+plt.savefig("optimized_insolation_improvement.png",bbox_inches='tight')
+
 plt.show(block=True)
 

@@ -1,0 +1,15 @@
+Figure 1:
+contour_irradiance_latitude_tiltFraction
+contour_irradiance_latitude_tilt_misalignment
+
+Figure 2:
+contour_irradiance_orientation
+
+Figure 3:
+optimize_tilt_angles
+
+Figure 4:
+plot_optimized_insolation
+
+Figure 5:
+contour_irradiance_day_tilt

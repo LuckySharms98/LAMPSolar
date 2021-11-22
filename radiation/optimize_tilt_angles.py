@@ -2,6 +2,7 @@ from scipy.optimize import minimize
 from radiation import ureg
 from radiation import Radiation
 import numpy as np
+import scipy.stats as stats
 
 from display_months import display_months
 import matplotlib.dates as dates
@@ -9,14 +10,17 @@ import matplotlib.ticker as ticker
 from scipy.optimize import Bounds
 
 import matplotlib.pyplot as plt
-
-latitudes = np.arange(0, 61, 1) * ureg.deg
+#latitudes = np.arange(0, 2, 1)*ureg.deg #[[0, 1]
+#latitudes = np.concatenate([[0, 1], np.arange(2, 61, 3)]) * ureg.deg
+#latitudes = np.arange(0, 60, 1) * ureg.deg
+latitudes = np.concatenate([[0, 1], np.arange(2, 61, 2)]) * ureg.deg
 gammas = 0 * ureg.degree
 
 n_times_move = 1
 
 days_in_year = 365
 spring_equinox = 81
+latitudes_fit_cutoff = 50*ureg.deg
 #beta_fraction0 = np.arange(1/n_times_move, 1, 1/n_times_move)
 betas0 = np.zeros((n_times_move))
 days0 = spring_equinox + days_in_year*np.arange(0, 1, 1/n_times_move)
@@ -82,10 +86,24 @@ for ind in range(1,len(latitudes)):
 #     beta_optimum[ind, :] = res.x
 #     opt_val[ind] = -res.fun
 
+colors_plot = ['#1f77b4','#ff7f0e','#2ca02c']
+r_values = np.empty(n_times_move)
+slopes = np.empty(n_times_move)
+intercepts = np.empty(n_times_move)
 for ind in range(n_times_move):
     #y_plot = np.take(y_module.magnitude, ind_line, axis=line_index)
-    plt.plot(latitudes.magnitude, beta_optimum[:, ind])
-plt.xlim([0, np.max(latitudes.magnitude)])
+    latitudesFit = latitudes[latitudes <= latitudes_fit_cutoff].magnitude
+    slopes[ind], intercepts[ind], r_values[ind], p_value, std_err = stats.linregress(latitudesFit, beta_optimum[latitudes <= latitudes_fit_cutoff, ind])
+    fit = intercepts[ind] + slopes[ind] * latitudesFit
+    print(r_values[ind])
+    #pFit = np.polyfit(latitudes[latitudes <= latitudes_fit_cutoff].magnitude,
+    #           beta_optimum[latitudes <= latitudes_fit_cutoff, ind], 1,full=True)
+    #p = np.poly1d(pFit)
+    #SSE = pFit[1][0] ,  latitudesFit, fit, ':'
+    #p = plt.plot(latitudes.magnitude, beta_optimum[:, ind])
+    p = plt.plot(latitudes.magnitude, beta_optimum[:, ind],latitudesFit, fit, ':',color=colors_plot[ind])
+    plt.xlim([0, np.max(latitudes.magnitude)])
+
 #plt.ylim([0, np.max(latitudes.magnitude)])
 
 plt.ylabel('Optimum Tilt (' + u'\N{DEGREE SIGN}' + ')')

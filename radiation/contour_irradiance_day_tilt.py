@@ -15,9 +15,10 @@ class AnyObjectHandler(HandlerBase):
 
 
 
-latitudes = 20 * ureg.degree
+latitudes = 60 * ureg.degree
 days = np.linspace(0, 365, 40) * ureg.day
 betas = np.linspace(-10, 85, 301) * ureg.degree
+
 #betas = 0 * ureg.degree
 gammas = [0] * ureg.degree
 
@@ -33,7 +34,12 @@ display_months(ax, 'x_axis')
 #ax.xaxis.get_label().set_fontsize(10)
 ax.tick_params(which ='minor', labelsize = 12)
 
+
+
 plt.title('')
+plt.savefig("irradianceContour_day_tilt_latitudes"+str(latitudes.magnitude)+".png",bbox_inches='tight')
+
+
 #plt.figure(2)
 fig, ax = plt.subplots()
 max_n_times_move = 2
@@ -125,10 +131,15 @@ labels += ['1D Tracking NS', '1D Tracking EW', '2D Tracking']
 
 #plt.legend([object], ['label'],
 #           handler_map={object: AnyObjectHandler()})
-plt.legend(line_objects, labels,handler_map={object: AnyObjectHandler()},frameon=False, loc = 'upper left')
+plt.legend(line_objects, labels,handler_map={object: AnyObjectHandler()},frameon=False, loc = 'lower center', fontsize =11.5)
 #plt.legend(line_objects+[object], labels,handler_map={object: AnyObjectHandler()},frameon=False)
 plt.ylabel('Total Insolation (kW-h/m$^2$/day)')
 display_months(ax, 'x_axis')
 plt.ylim(0, 14)
+plt.savefig("irradiancePlot_day_tilt_latitudes"+str(latitudes.magnitude)+".png",bbox_inches='tight')
+
+
 plt.show(block=True)
+
+
 

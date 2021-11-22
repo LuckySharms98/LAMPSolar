@@ -5,12 +5,12 @@ from scipy import interpolate
 from radiation import plt
 from display_months import display_months
 
-latitudes = [40] * ureg.degree
+latitudes = [90] * ureg.degree
 days = np.linspace(0, 365, 30)  * ureg.day
 
-betas = np.linspace(0, 90, 20) * ureg.degree
+betas = np.linspace(0, 90, 40) * ureg.degree
 
-gammas = np.linspace(-180, 180, 20) * ureg.degree
+gammas = np.linspace(-180, 180, 60) * ureg.degree
 
 rb = Radiation(latitudes, days, betas, gammas)
 
@@ -21,11 +21,12 @@ cs = rb.contour_irradiance('Beta','Gamma','TotalAnnualPerDay', [0, 1, 2, 3, 4, 5
 plt.title('')
 #plt.clim(cs, 0, 10)
 #plt.colorbar(cs)
+plt.savefig('contour_irradiance_orientation'+str(latitudes[0].magnitude))
 
 normalized = 1
 cs = rb.contour_irradiance('Beta','Gamma','TotalAnnualPerDay', np.arange(0, 1.05, 0.05), 'polar', normalized)
 plt.title('')
-
+plt.savefig('contour_irradiance_orientation_normalized'+str(latitudes[0].magnitude))
 
 
 
@@ -50,3 +51,4 @@ plt.ylim(0, 7)
 plt.legend(labels,frameon=False)
 plt.show(block=True)
 
+#plt.savefig('foo.png')
